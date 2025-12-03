@@ -89,7 +89,7 @@ let HIDABLE_CONTROLS = [
   ["☑ 테스트 데이터 표시", "showTestData"],
   ["☑ 출력 이산화", "discretize"],
   ["플레이 버튼", "playButton"],
-  ["다음 버튼 ボタン", "stepButton"],
+  ["다음 버튼", "stepButton"],
   ["재실행 버튼", "resetButton"],
   ["학습률", "learningRate"],
   ["활성화 함수", "activation"],
@@ -936,7 +936,7 @@ function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
   let value = (type === HoverType.WEIGHT) ?
     (nodeOrLink as nn.Link).weight :
     (nodeOrLink as nn.Node).bias;
-  let name = (type === HoverType.WEIGHT) ? "重み" : "バイアス";
+  let name = (type === HoverType.WEIGHT) ? "가중치" : "바이어스";
   hovercard.style({
     "left": `${coordinates[0] + 20}px`,
     "top": `${coordinates[1]}px`,
