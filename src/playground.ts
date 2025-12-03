@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import * as nn from "./nn";
-import {HeatMap, reduceMatrix} from "./heatmap";
+import { HeatMap, reduceMatrix } from "./heatmap";
 import {
   State,
   datasets,
@@ -26,15 +26,15 @@ import {
   getKeyFromValue,
   Problem
 } from "./state";
-import {Example2D, shuffle, Test2D} from "./dataset";
-import {AppendingLineChart} from "./linechart";
+import { Example2D, shuffle, Test2D } from "./dataset";
+import { AppendingLineChart } from "./linechart";
 import * as d3 from 'd3';
 
 const MAX_DOMAIN = 6;
 const NUM_TEST_DATA = 1;
 const DECIMAL_PLACE = 2;
 
-let isIE = function() {
+let isIE = function () {
   var userAgent = navigator.userAgent;
   return userAgent.indexOf('MSIE') !== -1 || userAgent.indexOf('Trident') !== -1;
 };
@@ -43,7 +43,7 @@ let inputEvent = (isIE()) ? "change" : "input";
 let mainWidth;
 
 // More scrolling
-d3.select(".more button").on("click", function() {
+d3.select(".more button").on("click", function () {
   let position = 800;
   d3.transition()
     .duration(1000)
@@ -51,10 +51,10 @@ d3.select(".more button").on("click", function() {
 });
 
 function scrollTween(offset) {
-  return function() {
+  return function () {
     let i = d3.interpolateNumber(window.pageYOffset ||
-        document.documentElement.scrollTop, offset);
-    return function(t) { scrollTo(0, i(t)); };
+      document.documentElement.scrollTop, offset);
+    return function (t) { scrollTo(0, i(t)); };
   };
 }
 
@@ -73,53 +73,53 @@ interface InputFeature {
   label?: string;
 }
 
-let INPUTS: {[name: string]: InputFeature} = {
-  "x": {f: (x, y) => x, label: "X_1"},
-  "y": {f: (x, y) => y, label: "X_2"},
-  "xSquared": {f: (x, y) => x * x, label: "X_1^2"},
-  "ySquared": {f: (x, y) => y * y,  label: "X_2^2"},
-  "xTimesY": {f: (x, y) => x * y, label: "X_1X_2"},
-  "sinX": {f: (x, y) => Math.sin(x), label: "sin(X_1)"},
-  "sinY": {f: (x, y) => Math.sin(y), label: "sin(X_2)"},
+let INPUTS: { [name: string]: InputFeature } = {
+  "x": { f: (x, y) => x, label: "X_1" },
+  "y": { f: (x, y) => y, label: "X_2" },
+  "xSquared": { f: (x, y) => x * x, label: "X_1^2" },
+  "ySquared": { f: (x, y) => y * y, label: "X_2^2" },
+  "xTimesY": { f: (x, y) => x * y, label: "X_1X_2" },
+  "sinX": { f: (x, y) => Math.sin(x), label: "sin(X_1)" },
+  "sinY": { f: (x, y) => Math.sin(y), label: "sin(X_2)" },
 };
 
 let HIDABLE_CONTROLS = [
-  ["☑ 訓練データ表示", "showTrainData"],
-  ["☑ 精度検証データ表示", "showValidationData"],
-  ["☑ テストデータ表示", "showTestData"],
-  ["☑ 出力の離散化", "discretize"],
-  ["再生 ボタン", "playButton"],
-  ["ステップ ボタン", "stepButton"],
-  ["リセット ボタン", "resetButton"],
-  ["学習率", "learningRate"],
-  ["活性化関数", "activation"],
-  ["損失関数", "loss"],
-  ["最適化", "optimizer"],
-  ["正則化", "regularization"],
-  ["正則化率", "regularizationRate"],
-  ["問題種別", "problem"],
-  ["データセットの選択", "dataset"],
-  ["訓練データの割合", "percTrainData"],
-  ["ノイズ レベル", "noise"],
-  ["バッチ サイズ", "batchSize"],
-  ["バッチ 全部", "batchFull"],
-  ["隠れ層 ⊕⊖ ボタン", "numHiddenLayers"]
+  ["☑ 학습 데이터 표시", "showTrainData"],
+  ["☑ 정밀도 검증 데이터 표시", "showValidationData"],
+  ["☑ 테스트 데이터 표시", "showTestData"],
+  ["☑ 출력 이산화", "discretize"],
+  ["플레이 버튼", "playButton"],
+  ["다음 버튼 ボタン", "stepButton"],
+  ["재실행 버튼", "resetButton"],
+  ["학습률", "learningRate"],
+  ["활성화 함수", "activation"],
+  ["Loss Function", "loss"],
+  ["최적화", "optimizer"],
+  ["정규화", "regularization"],
+  ["정규화율", "regularizationRate"],
+  ["문제 유형", "problem"],
+  ["데이터 세트 선택", "dataset"],
+  ["훈련 데이터 비율", "percTrainData"],
+  ["노이즈", "noise"],
+  ["배치 사이즈", "batchSize"],
+  ["배치 전체", "batchFull"],
+  ["숨겨진 레이어 ⊕⊖ 버튼", "numHiddenLayers"]
 ];
 
 
 let updateTableHead = function () {
   var isClassificaion: boolean = (state.problem == Problem.CLASSIFICATION);
-  var names: {x: string, y: string, label: string, pred: string }[] = [];
+  var names: { x: string, y: string, label: string, pred: string }[] = [];
   names.push(isClassificaion
-      ? {x: "X座標", y: "Y座標", label: "分類", pred: "予測" }
-      : {x: "X座標", y: "Y座標", label: "回帰", pred: "予測" }
+    ? { x: "X좌표", y: "Y좌표", label: "분류", pred: "예측" }
+    : { x: "X좌표", y: "Y좌표", label: "회귀", pred: "예측" }
   );
 
   var thead = d3.select("#data-table-head");
 
   thead.selectAll('tr').remove();
   var tr = thead.selectAll('tr').data(names);
-  var th = tr.enter().append("tr").selectAll('th').data(function(row) { return d3.entries(row); });
+  var th = tr.enter().append("tr").selectAll('th').data(function (row) { return d3.entries(row); });
   tr.exit().remove();
 
   th.enter().append("th").text((name: any) => { return name.value; });
@@ -131,26 +131,26 @@ let randUniform = function (a, b) {
 }
 
 let updateDataTable = function (points: Example2D[], isClassificaion: boolean) {
-   var tbody = d3.select("#data-table-body");
+  var tbody = d3.select("#data-table-body");
 
-   tbody.selectAll("tr").remove();
-   var tr = tbody.selectAll("tr").data(points);
-   var td = tr.enter().append("tr").selectAll("td").data(function(row) { return d3.entries(row); });
-   tr.exit().remove();
+  tbody.selectAll("tr").remove();
+  var tr = tbody.selectAll("tr").data(points);
+  var td = tr.enter().append("tr").selectAll("td").data(function (row) { return d3.entries(row); });
+  tr.exit().remove();
 
-   td.enter().append("td").text((d: any) => { return d.key == 'label' ? (isClassificaion ? d.value : '') : d.value.toFixed(DECIMAL_PLACE); }); 
-   td.exit().remove();
+  td.enter().append("td").text((d: any) => { return d.key == 'label' ? (isClassificaion ? d.value : '') : d.value.toFixed(DECIMAL_PLACE); });
+  td.exit().remove();
 };
 
 let generateTestPoints = function (numSamples: number) {
   var points: Test2D[] = [];
   for (var i = 0; i < numSamples; i++) {
-      var x = randUniform(-MAX_DOMAIN, MAX_DOMAIN);
-      var y = randUniform(-MAX_DOMAIN, MAX_DOMAIN);
-      var input = constructInput(x, y);
-      var pred = nn.forwardProp(network, input);
-      var label = (pred >= 0.0) ? 1 : -1;
-      points.push({x, y, label, pred});
+    var x = randUniform(-MAX_DOMAIN, MAX_DOMAIN);
+    var y = randUniform(-MAX_DOMAIN, MAX_DOMAIN);
+    var input = constructInput(x, y);
+    var pred = nn.forwardProp(network, input);
+    var label = (pred >= 0.0) ? 1 : -1;
+    points.push({ x, y, label, pred });
   }
   return points;
 };
@@ -162,7 +162,7 @@ let getTestPoint = function (coords) {
   var input = constructInput(x, y);
   var pred = nn.forwardProp(network, input);
   var label = (pred >= 0.0) ? 1 : -1;
-  points.push({x, y, label, pred});
+  points.push({ x, y, label, pred });
   return points;
 };
 
@@ -227,31 +227,31 @@ state.getHiddenProps().forEach(prop => {
   }
 });
 
-let boundary: {[id: string]: number[][]} = {};
+let boundary: { [id: string]: number[][] } = {};
 let selectedNodeId: string = null;
 // Plot the heatmap.
 let xDomain: [number, number] = [-MAX_DOMAIN, MAX_DOMAIN];
 let heatMap =
-    new HeatMap(300, DENSITY, xDomain, xDomain, d3.select("#heatmap"),
-        {showAxes: true},
-        (coords) => {
-          if (!state.showTestData) {
-            alert("［☑ テストデータ表示］をオンにしてください。");
-            return;
-          }
-          testData = getTestPoint(coords);
-          updateDataTable(testData, (state.problem == Problem.CLASSIFICATION));
-          heatMap.updateTestPoints(testData);
-        }
-      );
+  new HeatMap(300, DENSITY, xDomain, xDomain, d3.select("#heatmap"),
+    { showAxes: true },
+    (coords) => {
+      if (!state.showTestData) {
+        alert("[☑ 테스트 데이터 표시]를 켭니다.");
+        return;
+      }
+      testData = getTestPoint(coords);
+      updateDataTable(testData, (state.problem == Problem.CLASSIFICATION));
+      heatMap.updateTestPoints(testData);
+    }
+  );
 let linkWidthScale = d3.scale.linear()
   .domain([0, 5])
   .range([1, 10])
   .clamp(true);
 let colorScale = d3.scale.linear<string>()
-                     .domain([-1, 0, 1])
-                     .range(["#f59322", "#e8eaeb", "#0877bd"])
-                     .clamp(true);
+  .domain([-1, 0, 1])
+  .range(["#f59322", "#e8eaeb", "#0877bd"])
+  .clamp(true);
 let iter = 0;
 let trainData: Example2D[] = [];
 let validationData: Example2D[] = [];
@@ -263,13 +263,13 @@ let accTrain = 0;
 let accValidation = 0;
 let player = new Player();
 let lineChart = new AppendingLineChart(d3.select("#linechart"),
-    ["#777", "black"]);
+  ["#777", "black"]);
 
 
 function setBatchStatus() {
   if (state.batchFull) {
     d3.select("label[for='batchSize'] .value").text(trainData.length);
-    d3.select("#batch-size-slider").style({"pointer-events": "none", "opacity": "0.4"});
+    d3.select("#batch-size-slider").style({ "pointer-events": "none", "opacity": "0.4" });
   } else {
     d3.select("label[for='batchSize'] .value").text(state.batchSize);
     d3.select("#batch-size-slider").attr("style", null);
@@ -313,7 +313,7 @@ function makeGUI() {
 
   d3.select("#generate-test-data").on("click", () => {
     if (!state.showTestData) {
-      alert("［☑ テストデータ表示］をオンにしてください。");
+      alert("[☑ 테스트 데이터 표시]를 켭니다.");
       return;
     }
     testData = generateTestPoints(NUM_TEST_DATA);
@@ -322,12 +322,12 @@ function makeGUI() {
   });
 
   let dataThumbnails = d3.selectAll("canvas[data-dataset]");
-  dataThumbnails.on("click", function() {
+  dataThumbnails.on("click", function () {
     let newDataset = datasets[this.dataset.dataset];
     if (newDataset === state.dataset) {
       return; // No-op.
     }
-    state.dataset =  newDataset;
+    state.dataset = newDataset;
     dataThumbnails.classed("selected", false);
     d3.select(this).classed("selected", true);
     generateData();
@@ -341,12 +341,12 @@ function makeGUI() {
     .classed("selected", true);
 
   let regDataThumbnails = d3.selectAll("canvas[data-regDataset]");
-  regDataThumbnails.on("click", function() {
+  regDataThumbnails.on("click", function () {
     let newDataset = regDatasets[this.dataset.regdataset];
     if (newDataset === state.regDataset) {
       return; // No-op.
     }
-    state.regDataset =  newDataset;
+    state.regDataset = newDataset;
     regDataThumbnails.classed("selected", false);
     d3.select(this).classed("selected", true);
     generateData();
@@ -379,7 +379,7 @@ function makeGUI() {
     reset();
   });
 
-  let showTrainData = d3.select("#show-train-data").on("change", function() {
+  let showTrainData = d3.select("#show-train-data").on("change", function () {
     state.showTrainData = this.checked;
     state.serialize();
     userHasInteracted();
@@ -388,7 +388,7 @@ function makeGUI() {
   // Check/uncheck the checkbox according to the current state.
   showTrainData.property("checked", state.showTrainData);
 
-  let showValidationData = d3.select("#show-validation-data").on("change", function() {
+  let showValidationData = d3.select("#show-validation-data").on("change", function () {
     state.showValidationData = this.checked;
     state.serialize();
     userHasInteracted();
@@ -397,7 +397,7 @@ function makeGUI() {
   // Check/uncheck the checkbox according to the current state.
   showValidationData.property("checked", state.showValidationData);
 
-  let showTestData = d3.select("#show-test-data").on("change", function() {
+  let showTestData = d3.select("#show-test-data").on("change", function () {
     state.showTestData = this.checked;
     state.serialize();
     userHasInteracted();
@@ -406,7 +406,7 @@ function makeGUI() {
   // Check/uncheck the checkbox according to the current state.
   showTestData.property("checked", state.showTestData);
 
-  let discretize = d3.select("#discretize").on("change", function() {
+  let discretize = d3.select("#discretize").on("change", function () {
     state.discretize = this.checked;
     state.serialize();
     userHasInteracted();
@@ -415,7 +415,7 @@ function makeGUI() {
   // Check/uncheck the checbox according to the current state.
   discretize.property("checked", state.discretize);
 
-  let percTrain = d3.select("#percTrainData").on("input", function() {
+  let percTrain = d3.select("#percTrainData").on("input", function () {
     state.percTrainData = this.value;
     d3.select("label[for='percTrainData'] .value").text(this.value);
     generateData();
@@ -428,7 +428,7 @@ function makeGUI() {
   percTrain.property("value", state.percTrainData);
   d3.select("label[for='percTrainData'] .value").text(state.percTrainData);
 
-  let noise = d3.select("#noise").on("input", function() {
+  let noise = d3.select("#noise").on("input", function () {
     state.noise = this.value;
     d3.select("label[for='noise'] .value").text(this.value);
     generateData();
@@ -448,7 +448,7 @@ function makeGUI() {
   noise.property("value", state.noise);
   d3.select("label[for='noise'] .value").text(state.noise);
 
-  let batchSize = d3.select("#batchSize").on(inputEvent, function() {
+  let batchSize = d3.select("#batchSize").on(inputEvent, function () {
     state.batchSize = this.value;
     setBatchStatus();
     parametersChanged = true;
@@ -457,7 +457,7 @@ function makeGUI() {
   batchSize.property("value", (state.batchSize > 30) ? 30 : state.batchSize);
   // d3.select("label[for='batchSize'] .value").text(state.batchFull ? trainData.length : state.batchSize); // data size is not fixed yet.
 
-  let batchFull = d3.select("#batch-full-size").on("change", function() {
+  let batchFull = d3.select("#batch-full-size").on("change", function () {
     state.batchFull = this.checked;
     setBatchStatus();
     parametersChanged = true;
@@ -466,23 +466,23 @@ function makeGUI() {
   // Check/uncheck the checkbox according to the current state.
   batchFull.property("checked", state.batchFull);
 
-  let activationDropdown = d3.select("#activations").on("change", function() {
+  let activationDropdown = d3.select("#activations").on("change", function () {
     state.activation = activations[this.value];
     parametersChanged = true;
     reset();
   });
   activationDropdown.property("value",
-      getKeyFromValue(activations, state.activation));
+    getKeyFromValue(activations, state.activation));
 
-  let lossDropdown = d3.select("#losses").on("change", function() {
-    state.loss =losses[this.value];
+  let lossDropdown = d3.select("#losses").on("change", function () {
+    state.loss = losses[this.value];
     parametersChanged = true;
     reset();
   });
   lossDropdown.property("value",
-      getKeyFromValue(losses, state.loss));
+    getKeyFromValue(losses, state.loss));
 
-  let learningRate = d3.select("#learningRate").on("change", function() {
+  let learningRate = d3.select("#learningRate").on("change", function () {
     state.learningRate = +this.value;
     state.serialize();
     userHasInteracted();
@@ -491,22 +491,22 @@ function makeGUI() {
   learningRate.property("value", state.learningRate);
 
   let regularDropdown = d3.select("#regularizations").on("change",
-      function() {
-    state.regularization = regularizations[this.value];
-    parametersChanged = true;
-    reset();
-  });
+    function () {
+      state.regularization = regularizations[this.value];
+      parametersChanged = true;
+      reset();
+    });
   regularDropdown.property("value",
-      getKeyFromValue(regularizations, state.regularization));
+    getKeyFromValue(regularizations, state.regularization));
 
-  let regularRate = d3.select("#regularRate").on("change", function() {
+  let regularRate = d3.select("#regularRate").on("change", function () {
     state.regularizationRate = +this.value;
     parametersChanged = true;
     reset();
   });
   regularRate.property("value", state.regularizationRate);
 
-  let changeOutActiv = function() {
+  let changeOutActiv = function () {
     switch (state.problem) {
       case problems.classification:
         d3.select("#out-tanh").property("disabled", false).property("selected", true);
@@ -519,7 +519,7 @@ function makeGUI() {
     }
   }
 
-  let problem = d3.select("#problem").on("change", function() {
+  let problem = d3.select("#problem").on("change", function () {
     state.problem = problems[this.value];
     changeOutActiv();
     generateData();
@@ -551,7 +551,7 @@ function makeGUI() {
   // Listen for css-responsive changes and redraw the svg network.
   window.addEventListener("resize", () => {
     let newWidth = document.querySelector("#main-part")
-        .getBoundingClientRect().width;
+      .getBoundingClientRect().width;
     if (newWidth !== mainWidth) {
       mainWidth = newWidth;
       drawNetwork(network);
@@ -582,12 +582,12 @@ function updateWeightsUI(network: nn.Node[][], container: d3.Selection<any>) {
       for (let j = 0; j < node.inputLinks.length; j++) {
         let link = node.inputLinks[j];
         container.select(`#link${link.source.id}-${link.dest.id}`)
-            .style({
-              "stroke-dashoffset": -iter / 3,
-              "stroke-width": linkWidthScale(Math.abs(link.weight)),
-              "stroke": colorScale(link.weight)
-            })
-            .datum(link);
+          .style({
+            "stroke-dashoffset": -iter / 3,
+            "stroke-width": linkWidthScale(Math.abs(link.weight)),
+            "stroke": colorScale(link.weight)
+          })
+          .datum(link);
       }
     }
   }
@@ -612,15 +612,15 @@ function drawOutputBias(cx: number, cy: number, nodeId: string, container: d3.Se
       y: RECT_SIZE - BIAS_SIZE + 3,
       width: BIAS_SIZE,
       height: BIAS_SIZE,
-    }).on("mouseenter", function() {
+    }).on("mouseenter", function () {
       updateHoverCard(HoverType.BIAS, node, d3.mouse(container.node()));
-    }).on("mouseleave", function() {
+    }).on("mouseleave", function () {
       updateHoverCard(null);
     });
 }
 
 function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
-    container: d3.Selection<any>, node?: nn.Node) {
+  container: d3.Selection<any>, node?: nn.Node) {
   let x = cx - RECT_SIZE / 2;
   let y = cy - RECT_SIZE / 2;
 
@@ -642,7 +642,7 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
   let activeOrNotClass = state[nodeId] ? "active" : "inactive";
   if (isInput) {
     let label = INPUTS[nodeId].label != null ?
-        INPUTS[nodeId].label : nodeId;
+      INPUTS[nodeId].label : nodeId;
     // Draw the input label.
     let text = nodeGroup.append("text").attr({
       class: "main-label",
@@ -662,9 +662,9 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
           text.append("tspan").text(prefix);
         }
         text.append("tspan")
-        .attr("baseline-shift", sep === "_" ? "sub" : "super")
-        .style("font-size", "9px")
-        .text(suffix);
+          .attr("baseline-shift", sep === "_" ? "sub" : "super")
+          .style("font-size", "9px")
+          .text(suffix);
       }
       if (label.substring(lastIndex)) {
         text.append("tspan").text(label.substring(lastIndex));
@@ -683,9 +683,9 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
         y: RECT_SIZE - BIAS_SIZE + 3,
         width: BIAS_SIZE,
         height: BIAS_SIZE,
-      }).on("mouseenter", function() {
+      }).on("mouseenter", function () {
         updateHoverCard(HoverType.BIAS, node, d3.mouse(container.node()));
-      }).on("mouseleave", function() {
+      }).on("mouseleave", function () {
         updateHoverCard(null);
       });
   }
@@ -701,23 +701,23 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
       left: `${x + 3}px`,
       top: `${y + 3}px`
     })
-    .on("mouseenter", function() {
+    .on("mouseenter", function () {
       selectedNodeId = nodeId;
       div.classed("hovered", true);
       nodeGroup.classed("hovered", true);
       updateDecisionBoundary(network, false);
       heatMap.updateBackground(boundary[nodeId], state.discretize);
     })
-    .on("mouseleave", function() {
+    .on("mouseleave", function () {
       selectedNodeId = null;
       div.classed("hovered", false);
       nodeGroup.classed("hovered", false);
       updateDecisionBoundary(network, false);
       heatMap.updateBackground(boundary[nn.getOutputNode(network).id],
-          state.discretize);
+        state.discretize);
     });
   if (isInput) {
-    div.on("click", function() {
+    div.on("click", function () {
       state[nodeId] = !state[nodeId];
       parametersChanged = true;
       reset();
@@ -728,8 +728,8 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
     div.classed(activeOrNotClass, true);
   }
   let nodeHeatMap = new HeatMap(RECT_SIZE, DENSITY / 10, xDomain,
-      xDomain, div, {noSvg: true});
-  div.datum({heatmap: nodeHeatMap, id: nodeId});
+    xDomain, div, { noSvg: true });
+  div.datum({ heatmap: nodeHeatMap, id: nodeId });
 
 }
 
@@ -750,7 +750,7 @@ function drawNetwork(network: nn.Node[][]): void {
   svg.attr("width", width);
 
   // Map of all node coordinates.
-  let node2coord: {[id: string]: {cx: number, cy: number}} = {};
+  let node2coord: { [id: string]: { cx: number, cy: number } } = {};
   let container = svg.append("g")
     .classed("core", true)
     .attr("transform", `translate(${padding},${padding})`);
@@ -758,8 +758,8 @@ function drawNetwork(network: nn.Node[][]): void {
   let numLayers = network.length;
   let featureWidth = 118;
   let layerScale = d3.scale.ordinal<number, number>()
-      .domain(d3.range(1, numLayers - 1))
-      .rangePoints([featureWidth, width - RECT_SIZE], 0.7);
+    .domain(d3.range(1, numLayers - 1))
+    .rangePoints([featureWidth, width - RECT_SIZE], 0.7);
   let nodeIndexScale = (nodeIndex: number) => nodeIndex * (RECT_SIZE + 25);
 
 
@@ -774,7 +774,7 @@ function drawNetwork(network: nn.Node[][]): void {
   let maxY = nodeIndexScale(nodeIds.length);
   nodeIds.forEach((nodeId, i) => {
     let cy = nodeIndexScale(i) + RECT_SIZE / 2;
-    node2coord[nodeId] = {cx, cy};
+    node2coord[nodeId] = { cx, cy };
     drawNode(cx, cy, nodeId, true, container);
   });
 
@@ -787,15 +787,15 @@ function drawNetwork(network: nn.Node[][]): void {
     for (let i = 0; i < numNodes; i++) {
       let node = network[layerIdx][i];
       let cy = nodeIndexScale(i) + RECT_SIZE / 2;
-      node2coord[node.id] = {cx, cy};
+      node2coord[node.id] = { cx, cy };
       drawNode(cx, cy, node.id, false, container, node);
 
       // Show callout to thumbnails.
       let numNodes = network[layerIdx].length;
       let nextNumNodes = network[layerIdx + 1].length;
       if (idWithCallout == null &&
-          i === numNodes - 1 &&
-          nextNumNodes <= numNodes) {
+        i === numNodes - 1 &&
+        nextNumNodes <= numNodes) {
         calloutThumb.style({
           display: null,
           top: `${20 + 3 + cy}px`,
@@ -808,16 +808,16 @@ function drawNetwork(network: nn.Node[][]): void {
       for (let j = 0; j < node.inputLinks.length; j++) {
         let link = node.inputLinks[j];
         let path: SVGPathElement = drawLink(link, node2coord, network,
-            container, j === 0, j, node.inputLinks.length).node() as any;
+          container, j === 0, j, node.inputLinks.length).node() as any;
         // Show callout to weights.
         let prevLayer = network[layerIdx - 1];
         let lastNodePrevLayer = prevLayer[prevLayer.length - 1];
         if (targetIdWithCallout == null &&
-            i === numNodes - 1 &&
-            link.source.id === lastNodePrevLayer.id &&
-            (link.source.id !== idWithCallout || numLayers <= 5) &&
-            link.dest.id !== idWithCallout &&
-            prevLayer.length >= numNodes) {
+          i === numNodes - 1 &&
+          link.source.id === lastNodePrevLayer.id &&
+          (link.source.id !== idWithCallout || numLayers <= 5) &&
+          link.dest.id !== idWithCallout &&
+          prevLayer.length >= numNodes) {
           let midPoint = path.getPointAtLength(path.getTotalLength() * 0.7);
           calloutWeights.style({
             display: null,
@@ -834,7 +834,7 @@ function drawNetwork(network: nn.Node[][]): void {
   cx = width + RECT_SIZE / 2;
   let node = network[numLayers - 1][0];
   let cy = nodeIndexScale(0) + RECT_SIZE / 2;
-  node2coord[node.id] = {cx, cy};
+  node2coord[node.id] = { cx, cy };
 
   drawOutputBias(cx, cy, node.id, container, node);
 
@@ -842,7 +842,7 @@ function drawNetwork(network: nn.Node[][]): void {
   for (let i = 0; i < node.inputLinks.length; i++) {
     let link = node.inputLinks[i];
     drawLink(link, node2coord, network, container, i === 0, i,
-        node.inputLinks.length);
+      node.inputLinks.length);
   }
   // Adjust the height of the svg.
   svg.attr("height", maxY);
@@ -869,34 +869,34 @@ function addPlusMinusControl(x: number, layerIdx: number) {
   let i = layerIdx - 1;
   let firstRow = div.append("div").attr("class", `ui-numNodes${layerIdx}`);
   firstRow.append("button")
-      .attr("class", "mdl-button mdl-js-button mdl-button--icon")
-      .on("click", () => {
-        let numNeurons = state.networkShape[i];
-        if (numNeurons >= 8) {
-          return;
-        }
-        state.networkShape[i]++;
-        parametersChanged = true;
-        reset();
-      })
+    .attr("class", "mdl-button mdl-js-button mdl-button--icon")
+    .on("click", () => {
+      let numNeurons = state.networkShape[i];
+      if (numNeurons >= 8) {
+        return;
+      }
+      state.networkShape[i]++;
+      parametersChanged = true;
+      reset();
+    })
     .append("i")
-      .attr("class", "material-icons")
-      .text("add");
+    .attr("class", "material-icons")
+    .text("add");
 
   firstRow.append("button")
-      .attr("class", "mdl-button mdl-js-button mdl-button--icon")
-      .on("click", () => {
-        let numNeurons = state.networkShape[i];
-        if (numNeurons <= 1) {
-          return;
-        }
-        state.networkShape[i]--;
-        parametersChanged = true;
-        reset();
-      })
+    .attr("class", "mdl-button mdl-js-button mdl-button--icon")
+    .on("click", () => {
+      let numNeurons = state.networkShape[i];
+      if (numNeurons <= 1) {
+        return;
+      }
+      state.networkShape[i]--;
+      parametersChanged = true;
+      reset();
+    })
     .append("i")
-      .attr("class", "material-icons")
-      .text("remove");
+    .attr("class", "material-icons")
+    .text("remove");
 
   let suffix = state.networkShape[i] > 1 ? "s" : "";
   div.append("div").text(
@@ -905,7 +905,7 @@ function addPlusMinusControl(x: number, layerIdx: number) {
 }
 
 function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
-    coordinates?: [number, number]) {
+  coordinates?: [number, number]) {
   let hovercard = d3.select("#hovercard");
   if (type == null) {
     hovercard.style("display", "none");
@@ -916,7 +916,7 @@ function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
     hovercard.select(".value").style("display", "none");
     let input = hovercard.select("input");
     input.style("display", null);
-    input.on("input", function() {
+    input.on("input", function () {
       if (this.value != null && this.value !== "") {
         if (type === HoverType.WEIGHT) {
           (nodeOrLink as nn.Link).weight = +this.value;
@@ -952,9 +952,9 @@ function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
 }
 
 function drawLink(
-    input: nn.Link, node2coord: {[id: string]: {cx: number, cy: number}},
-    network: nn.Node[][], container: d3.Selection<any>,
-    isFirst: boolean, index: number, length: number) {
+  input: nn.Link, node2coord: { [id: string]: { cx: number, cy: number } },
+  network: nn.Node[][], container: d3.Selection<any>,
+  isFirst: boolean, index: number, length: number) {
   let line = container.insert("path", ":first-child");
   let source = node2coord[input.source.id];
   let dest = node2coord[input.dest.id];
@@ -981,9 +981,9 @@ function drawLink(
   container.append("path")
     .attr("d", diagonal(datum, 0))
     .attr("class", "link-hover")
-    .on("mouseenter", function() {
+    .on("mouseenter", function () {
       updateHoverCard(HoverType.WEIGHT, input, d3.mouse(this));
-    }).on("mouseleave", function() {
+    }).on("mouseleave", function () {
       updateHoverCard(null);
     });
   return line;
@@ -1084,15 +1084,15 @@ function updateUI(firstStep = false) {
   // Get the decision boundary of the network.
   updateDecisionBoundary(network, firstStep);
   let selectedId = selectedNodeId != null ?
-      selectedNodeId : nn.getOutputNode(network).id;
+    selectedNodeId : nn.getOutputNode(network).id;
   heatMap.updateBackground(boundary[selectedId], state.discretize);
 
   // Update all decision boundaries.
   d3.select("#network").selectAll("div.canvas")
-      .each(function(data: {heatmap: HeatMap, id: string}) {
-    data.heatmap.updateBackground(reduceMatrix(boundary[data.id], 10),
+    .each(function (data: { heatmap: HeatMap, id: string }) {
+      data.heatmap.updateBackground(reduceMatrix(boundary[data.id], 10),
         state.discretize);
-  });
+    });
 
   function zeroPad(n: number): string {
     let pad = "000000";
@@ -1177,7 +1177,7 @@ export function getOutputWeights(network: nn.Node[][]): number[] {
   return weights;
 }
 
-function reset(onStartup=false) {
+function reset(onStartup = false) {
   lineChart.reset();
   state.serialize();
   if (!onStartup) {
@@ -1186,18 +1186,18 @@ function reset(onStartup=false) {
   player.pause();
 
   //let suffix = state.numHiddenLayers !== 1 ? "s" : "";
-  //d3.select("#layers-label").text("隠れ層" + suffix);
-  d3.select("#layers-label").text("隠れ層");
+  //d3.select("#layers-label").text("숨겨진 레이어" + suffix);
+  d3.select("#layers-label").text("숨겨진 레이어");
   d3.select("#num-layers").text(state.numHiddenLayers);
 
   // Make a simple network.
   iter = 0;
-  let numInputs = constructInput(0 , 0).length;
+  let numInputs = constructInput(0, 0).length;
   let shape = [numInputs].concat(state.networkShape).concat([1]);
   let outputActivation = (state.problem === Problem.REGRESSION) ?
-      nn.Activations.LINEAR : nn.Activations.TANH;
+    nn.Activations.LINEAR : nn.Activations.TANH;
   network = nn.buildNetwork(shape, state.activation, outputActivation,
-      state.regularization, constructInputIds(), state.initOrigin);
+    state.regularization, constructInputIds(), state.initOrigin);
   lossTrain = getLoss(network, trainData);
   lossValidation = getLoss(network, validationData);
   if (state.problem === Problem.CLASSIFICATION) {
@@ -1229,7 +1229,7 @@ function initTutorial() {
         "margin-top": "20px",
         "margin-bottom": "20px",
       })
-      .text(title.text());
+        .text(title.text());
       document.title = title.text();
     }
   });
@@ -1243,7 +1243,7 @@ function drawDatasetThumbnails() {
     canvas.setAttribute("height", h);
     let context = canvas.getContext("2d");
     let data = dataGenerator(200, 0);
-    data.forEach(function(d) {
+    data.forEach(function (d) {
       context.fillStyle = colorScale(d.label);
       context.fillRect(w * (d.x + 6) / 12, h - h * (d.y + 6) / 12 - 4, 4, 4);
     });
@@ -1254,7 +1254,7 @@ function drawDatasetThumbnails() {
   if (state.problem === Problem.CLASSIFICATION) {
     for (let dataset in datasets) {
       let canvas: any =
-          document.querySelector(`canvas[data-dataset=${dataset}]`);
+        document.querySelector(`canvas[data-dataset=${dataset}]`);
       let dataGenerator = datasets[dataset];
       renderThumbnail(canvas, dataGenerator);
     }
@@ -1262,7 +1262,7 @@ function drawDatasetThumbnails() {
   if (state.problem === Problem.REGRESSION) {
     for (let regDataset in regDatasets) {
       let canvas: any =
-          document.querySelector(`canvas[data-regDataset=${regDataset}]`);
+        document.querySelector(`canvas[data-regDataset=${regDataset}]`);
       let dataGenerator = regDatasets[regDataset];
       renderThumbnail(canvas, dataGenerator);
     }
@@ -1302,7 +1302,7 @@ function hideControls() {
     if (hiddenProps.indexOf(id) === -1) {
       input.attr("checked", "true");
     }
-    input.on("change", function() {
+    input.on("change", function () {
       state.setHideProperty(id, !this.checked);
       state.serialize();
       userHasInteracted();
@@ -1326,9 +1326,9 @@ function generateData(firstTime = false) {
   }
   Math.seedrandom(state.seed);
   let numSamples = (state.problem === Problem.REGRESSION) ?
-      NUM_SAMPLES_REGRESS : NUM_SAMPLES_CLASSIFY;
+    NUM_SAMPLES_REGRESS : NUM_SAMPLES_CLASSIFY;
   let generator = state.problem === Problem.CLASSIFICATION ?
-      state.dataset : state.regDataset;
+    state.dataset : state.regDataset;
   let data = generator(numSamples, state.noise / 100);
   // Shuffle the data in-place.
   shuffle(data);
@@ -1353,7 +1353,7 @@ function userHasInteracted() {
     page = `/v/tutorials/${state.tutorial}`;
   }
   ga('set', 'page', page);
-  ga('send', 'pageview', {'sessionControl': 'start'});
+  ga('send', 'pageview', { 'sessionControl': 'start' });
 }
 
 function simulationStarted() {
